@@ -2,7 +2,7 @@ Package: oneshot
 Architecture: all
 Maintainer: Resurrected21
 Installed-Size: 700
-Version: 1.0.0
+Version: 1.0.2
 Homepage: https://github.com/Resurrected21/oneshot
 Depends: python, pixiewps, wpa-supplicant, tsu, iw
 Description: Run WPS PIN attacks (Pixie Dust and bruteforce) without monitor mode with wpa_supplicant
