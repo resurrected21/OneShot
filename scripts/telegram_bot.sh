@@ -7,16 +7,11 @@
 
 set -e
 
-# Check required environment variables
 if [ -z "$BOT_TOKEN" ] || [ -z "$CHAT_ID" ]; then
     echo "Error: BOT_TOKEN and CHAT_ID environment variables required!" >&2
-    echo "Set them in GitHub Secrets:" >&2
-    echo "  - TELEGRAM_BOT_TOKEN" >&2
-    echo "  - TELEGRAM_CHAT_ID" >&2
     exit 1
 fi
 
-# File to upload
 file="$1"
 
 if [ -z "$file" ] || [ ! -f "$file" ]; then
@@ -24,38 +19,44 @@ if [ -z "$file" ] || [ ! -f "$file" ]; then
     exit 1
 fi
 
-# Get file info
 file_size=$(du -h "$file" | cut -f1)
 file_name=$(basename "$file")
 
-# Prepare message
-msg="*OneShot Build Complete*
+# Escape special characters for MarkdownV2
+escape_markdown() {
+    echo "$1" | sed 's/[_*[\]()~`>#+=|{}.!-]/\\&/g'
+}
 
-*Version:* $VERSION
-*Build:* #ci_$VERSION
-*File:* $file_name
-*Size:* $file_size
+VERSION_ESC=$(escape_markdown "$VERSION")
+FILE_NAME_ESC=$(escape_markdown "$file_name")
+FILE_SIZE_ESC=$(escape_markdown "$file_size")
+COMMIT_MSG_ESC=$(escape_markdown "$COMMIT_MESSAGE")
 
-*Commit Message:*
+# Create message with proper escaping
+msg="*OneShot Build Complete* 🚀
+
+*Version:* \`${VERSION_ESC}\`
+*File:* \`${FILE_NAME_ESC}\`
+*Size:* \`${FILE_SIZE_ESC}\`
+
+*Commit:*
 \`\`\`
-$COMMIT_MESSAGE
+${COMMIT_MSG_ESC}
 \`\`\`
 
 *Links:*
-[View Commit]($COMMIT_URL)
-[Workflow Run]($RUN_URL)
-[Download Release](https://github.com/resurrected21/OneShot/releases)
+[View Commit](${COMMIT_URL})
+[Workflow Run](${RUN_URL})
+[Download Release](${DOWNLOAD_URL})
 
 *Installation:*
 \`\`\`bash
-wget $DOWNLOAD_URL
-apt install ./$file_name
+wget ${DOWNLOAD_URL}
+apt install \./oneshot\*.deb
 \`\`\`
 
-Ready to use!
-"
+✅ Ready to use\!"
 
-# Send to Telegram
 echo "Sending notification to Telegram..."
 echo "Chat ID: $CHAT_ID"
 echo "File: $file"
@@ -67,10 +68,8 @@ response=$(curl -s -F document=@"$file" \
     -F "parse_mode=markdownv2" \
     -F caption="$msg")
 
-# Check if successful
 if echo "$response" | grep -q '"ok":true'; then
     echo "✓ Notification sent successfully!"
-    echo "Response: $response"
     exit 0
 else
     echo "✗ Failed to send notification!" >&2
