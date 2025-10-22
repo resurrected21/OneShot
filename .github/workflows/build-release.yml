@@ -37,7 +37,7 @@ jobs:
           GITHUB_WORKSPACE: ${{ github.workspace }}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: oneshot-deb
           path: |
@@ -56,27 +56,50 @@ jobs:
           body: |
             # OneShot ${{ steps.setup.outputs.VERSION }}
 
-            ## Installation
+            ## 📦 Installation
             ```bash
-            wget https://github.com/resurrected21/OneShot/releases/download/${{ github.ref_name }}/${{ steps.build.outputs.deb_name }}
+            wget https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/${{ steps.build.outputs.deb_name }}
             apt install ./${{ steps.build.outputs.deb_name }}
             ```
 
-            ## Usage
+            ## 🚀 Usage
             ```bash
+            # Scan and attack with Pixie Dust
             sudo oneshot -i wlan0 -K
+
+            # Target specific BSSID
+            sudo oneshot -i wlan0 -b AA:BB:CC:DD:EE:FF -K
+
+            # Online bruteforce
+            sudo oneshot -i wlan0 -B
             ```
 
-            ## What's New
-            - Updated vulnerable devices database (340+ routers)
-            - 2025 router models added (TP-Link, ASUS, D-Link, etc.)
-            - Improved installation scripts
-            - Better error handling
+            ## ✨ What's New in this Release
+            - ✅ Updated vulnerable devices database (340+ router models)
+            - ✅ Added 2024-2025 router models (TP-Link, ASUS, D-Link, NETGEAR, etc.)
+            - ✅ Enhanced Pixie Dust attack success rate
+            - ✅ Improved installation scripts with better error handling
+            - ✅ Added post-install usage instructions
+
+            ## 📊 Supported Router Brands
+            - TP-Link (Archer BE/AX/C series, TL-WR series)
+            - ASUS (RT-AX series, TUF Gaming, ROG Rapture)
+            - D-Link (DIR-X series, DSL modems, DAP access points)
+            - NETGEAR (Nighthawk RAX series, Orbi mesh)
+            - Xiaomi/Redmi routers
+            - Tenda, Huawei, Linksys, ZyXEL, and more
+
+            ## 🔐 Security Notice
+            This tool is for authorized penetration testing only. Use responsibly on networks you own or have permission to test.
+
+            ---
+
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/v${{ steps.setup.outputs.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Send Telegram notification
-        if: success()
+        if: success() && secrets.TELEGRAM_BOT_TOKEN != ''
         run: |
           bash scripts/telegram_bot.sh "${{ steps.build.outputs.deb_out }}"
         env:
@@ -86,4 +109,4 @@ jobs:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           COMMIT_URL: ${{ github.event.head_commit.url }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          DOWNLOAD_URL: https://github.com/resurrected21/OneShot/releases/latest
+          DOWNLOAD_URL: https://github.com/${{ github.repository }}/releases/latest
