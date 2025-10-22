@@ -1,7 +1,0 @@
-name: Build OneShot DEB Package
-
-on:
-  push:
-    tags:
-      - 'v*'  # Triggers on version tags
-  workflow_dispatch:  # Allows manual triggering
